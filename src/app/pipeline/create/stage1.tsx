@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { X, FileText } from "lucide-react";
+import { X, FileText, AlertTriangle } from "lucide-react";
 import StageLayout from "@/app/components/StageLayout";
 import StageLoader from "@/app/components/StageLoader";
 
 export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [legend, setLegend] = useState("");
-  const [agentName, setAgentName] = useState("");
+  const [agent_name, setAgentName] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,15 +45,25 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
   };
 
   const handleSubmit = async () => {
-    // simulate slight delay for UX smoothness
+    setLoading(true);
+
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("agent_name", agent_name);
+    formData.append("description", description);
+
+    files.forEach((file, index) => {
+      formData.append("files", file, file.name); // key can be same "files" for multiple files
+    });
+
     setTimeout(() => {
       setLoading(false);
       onNext({
         pipelineId: "testing",
         title,
         description,
-        legend,
-        agentName,
+        agent_name,
         fileCount: files.length,
       });
     }, 1200);
@@ -106,15 +115,8 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
             />
 
             <input
-              placeholder="Pipeline Legend (Chatbox Name)"
-              value={legend}
-              onChange={(e) => setLegend(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 focus:ring-2 focus:ring-indigo-600"
-            />
-
-            <input
               placeholder="RAG Agent Name"
-              value={agentName}
+              value={agent_name}
               onChange={(e) => setAgentName(e.target.value)}
               className="w-full px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 focus:ring-2 focus:ring-indigo-600"
             />
@@ -125,6 +127,28 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 focus:ring-2 focus:ring-indigo-600"
             />
+          </div>
+        </div>
+
+        {/* Warning / Info Section */}
+        <div className="flex items-start gap-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4 text-sm text-yellow-500/90">
+          <AlertTriangle size={20} className="text-yellow-400 mt-1" />
+          <div>
+            <p className="font-semibold">Important File Guidelines</p>
+            <ul className="mt-1 list-disc list-inside space-y-1">
+              <li>
+                Only <span className="text-yellow-200">.md</span>(markdown)
+                files are allowed.
+              </li>
+              <li>
+                Maximum of <span className="text-yellow-200">10</span> files per
+                pipeline.
+              </li>
+              <li>
+                Each file name should clearly represent its content to help with
+                semantic chunking later.
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -156,9 +180,8 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
             </div>
 
             <p className="text-xs text-slate-500 mt-3">
-              Supported format: <span className="text-indigo-400">.md</span>{" "}
-              files only. Maximum 10 documents. Each document will be parsed and
-              prepared for semantic chunking in the next stage.
+              Each document will be parsed and prepared for semantic chunking in
+              the next stage.
             </p>
           </div>
         </div>

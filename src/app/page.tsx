@@ -1,10 +1,14 @@
+"use client";
 import Link from "next/link";
 import { Sparkles, Database, MessageSquare } from "lucide-react";
+import { useAuth } from "./store/auth";
 
 export default function Home() {
+  const users = useAuth((state) => state.user);
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-6">
       <div className="max-w-5xl w-full text-center">
+        {users?.email}
         {/* Hero Section */}
         <div className="mb-16">
           <div className="flex justify-center mb-6">
@@ -38,7 +42,6 @@ export default function Home() {
             </Link>
           </div>
         </div>
-
         {/* Feature Cards */}
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg hover:shadow-indigo-900/30 transition">
@@ -70,7 +73,6 @@ export default function Home() {
             </p>
           </div>
         </div>
-
         {/* Footer */}
         <div className="mt-16 text-sm text-slate-500">
           © {new Date().getFullYear()} Rag Pipeline • Built by{" "}

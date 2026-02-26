@@ -5,7 +5,9 @@ import Link from "next/link";
 import { Sparkles, Mail, Lock } from "lucide-react";
 import AuthSvc from "@/api/services/auth.service";
 import { useToast } from "@/context/ToastContext";
-
+import { useAuth } from "@/app/store/auth";
+import { jwtDecode } from "jwt-decode";
+import { JwtPayload } from "../types/jwt.types";
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
@@ -13,6 +15,7 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState(false); // <-- loading state
   const { addToast } = useToast();
+  const saveUser = useAuth((state) => state.saveUser);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -27,10 +30,12 @@ export default function LoginPage() {
 
     try {
       const res = await AuthSvc.login(formData);
+      const decode: JwtPayload = jwtDecode(res.data.access_token);
+      saveUser({ id: decode.id, email: decode.sub });
       localStorage.setItem("rag_token", res.data.access_token);
       addToast("Login successful!", "success");
 
-      // Full reload to /
+      // // Full reload to /
       window.location.href = "/";
     } catch (error: unknown) {
       addToast((error as Error).message, "error");

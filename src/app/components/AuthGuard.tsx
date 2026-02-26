@@ -2,10 +2,13 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
-
+import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../store/auth";
+import { JwtPayload } from "../types/jwt.types";
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const saveUser = useAuth((state) => state.saveUser);
 
   // Compute auth state synchronously during render — no effect needed
   const token =
@@ -20,12 +23,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!authorized && !isPublicPath) {
       router.replace("/login");
     }
-
+    if (token) {
+      const decode: JwtPayload = jwtDecode(token as string);
+      saveUser({ id: decode.id, email: decode.sub });
+    }
     // Redirect if authorized and trying to access login/register
     if (authorized && isPublicPath) {
       router.replace("/");
     }
-  }, [authorized, isPublicPath, pathname, router]);
+  }, [authorized, isPublicPath, pathname, router, saveUser, token]);
 
   return <>{children}</>;
 }
