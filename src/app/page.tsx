@@ -1,14 +1,11 @@
 "use client";
 import Link from "next/link";
 import { Sparkles, Database, MessageSquare } from "lucide-react";
-import { useAuth } from "./store/auth";
 
 export default function Home() {
-  const users = useAuth((state) => state.user);
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-6">
       <div className="max-w-5xl w-full text-center">
-        {users?.email}
         {/* Hero Section */}
         <div className="mb-16">
           <div className="flex justify-center mb-6">

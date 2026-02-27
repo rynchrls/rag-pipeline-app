@@ -3,16 +3,24 @@
 import { useState } from "react";
 import StageLayout from "@/app/components/StageLayout";
 import StageLoader from "@/app/components/StageLoader";
+import { GetPipelineStage, PipelineStage } from "@/app/types/pipeline.types";
 
-export default function Stage2({ pipelineData, onNext, onBack }: any) {
+interface Stage2Props {
+  pipelineData: PipelineStage | null | GetPipelineStage;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
   const [loading, setLoading] = useState(false);
 
   const handleChunking = async () => {
     setLoading(true);
 
+    // 🔥 Replace this with your real API call
     setTimeout(() => {
       setLoading(false);
-      onNext({ totalChunks: 120 }); // example response
+      onNext();
     }, 2000);
   };
 
@@ -38,17 +46,44 @@ export default function Stage2({ pipelineData, onNext, onBack }: any) {
 
         <div className="text-sm text-slate-400 space-y-2">
           <p>
-            <span className="text-slate-300">Title:</span> {pipelineData.title}
+            <span className="text-slate-300">Title:</span> {pipelineData?.title}
           </p>
           <p>
             <span className="text-slate-300">Agent:</span>{" "}
-            {pipelineData.agentName}
+            {pipelineData?.agent_name}
+          </p>
+          <p>
+            <span className="text-slate-300">Author Email:</span>{" "}
+            {pipelineData?.email}
           </p>
           <p>
             <span className="text-slate-300">Documents:</span>{" "}
-            {pipelineData.fileCount} uploaded
+            {pipelineData?.file_count} uploaded
           </p>
         </div>
+      </div>
+
+      {/* Uploaded Files List */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+        <h3 className="text-lg font-semibold text-slate-300 mb-4">
+          Uploaded Files ({pipelineData?.file_count})
+        </h3>
+
+        {pipelineData?.file_names?.length === 0 ? (
+          <p className="text-sm text-slate-500">No files uploaded.</p>
+        ) : (
+          <ul className="space-y-2 text-sm text-slate-400">
+            {pipelineData?.file_names?.map((file, index) => (
+              <li
+                key={index}
+                className="flex items-center justify-between bg-slate-800 px-3 py-2 rounded-lg border border-slate-700"
+              >
+                <span className="truncate">{file}</span>
+                <span className="text-xs text-slate-500">#{index + 1}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* What is Chunking */}
@@ -74,12 +109,12 @@ export default function Stage2({ pipelineData, onNext, onBack }: any) {
         <div className="grid grid-cols-2 gap-6 text-sm text-slate-400">
           <div>
             <p className="text-slate-300 font-medium">Chunk Size</p>
-            <p>500 tokens (optimized for retrieval accuracy)</p>
+            <p>500 tokens</p>
           </div>
 
           <div>
             <p className="text-slate-300 font-medium">Chunk Overlap</p>
-            <p>50 tokens (preserves context continuity)</p>
+            <p>50 tokens</p>
           </div>
 
           <div>
@@ -89,19 +124,19 @@ export default function Stage2({ pipelineData, onNext, onBack }: any) {
 
           <div>
             <p className="text-slate-300 font-medium">Output</p>
-            <p>Structured text segments ready for embedding</p>
+            <p>Structured segments for embedding</p>
           </div>
         </div>
       </div>
 
-      {/* System Notice */}
+      {/* Estimated Processing */}
       <div className="bg-indigo-900/20 border border-indigo-700/30 rounded-xl p-4 mb-6">
         <h4 className="text-indigo-400 font-medium mb-2">
           Estimated Processing
         </h4>
         <p className="text-sm text-slate-400">
-          Based on your document count, chunking may take a few seconds. Larger
-          documents will increase processing time.
+          {pipelineData?.file_count} file(s) detected. Processing time scales
+          based on document size and complexity.
         </p>
       </div>
 
@@ -109,7 +144,7 @@ export default function Stage2({ pipelineData, onNext, onBack }: any) {
       <div className="flex justify-between mt-6">
         <button
           onClick={onBack}
-          className="px-6 py-2 rounded-lg border border-slate-700 hover:bg-slate-800"
+          className=" cursor-pointer px-6 py-2 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
         >
           ← Back to Setup
         </button>

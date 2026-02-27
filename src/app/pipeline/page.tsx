@@ -35,7 +35,7 @@ export default function PipelinePage() {
 
         <button className="flex items-center gap-2 bg-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-500 transition">
           <Plus size={18} />
-          <Link href="/pipeline/create">Create Pipeline</Link>
+          <Link href="/pipeline/create?stage=1">Create Pipeline</Link>
         </button>
       </div>
 

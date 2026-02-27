@@ -3,8 +3,15 @@
 import { useState } from "react";
 import StageLayout from "@/app/components/StageLayout";
 import StageLoader from "@/app/components/StageLoader";
+import { GetPipelineStage, PipelineStage } from "@/app/types/pipeline.types";
 
-export default function Stage3({ pipelineData, onBack }: any) {
+export default function Stage3({
+  pipelineData,
+  onBack,
+}: {
+  pipelineData: PipelineStage | null | GetPipelineStage;
+  onBack: () => void;
+}) {
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
 
@@ -80,15 +87,14 @@ export default function Stage3({ pipelineData, onBack }: any) {
         <div className="text-sm text-slate-400 space-y-2">
           <p>
             <span className="text-slate-300">Pipeline:</span>{" "}
-            {pipelineData.title}
+            {pipelineData?.title}
           </p>
           <p>
             <span className="text-slate-300">Agent:</span>{" "}
-            {pipelineData.agentName}
+            {pipelineData?.agent_name}
           </p>
           <p>
-            <span className="text-slate-300">Total Chunks Generated:</span>{" "}
-            {pipelineData.chunkData?.totalChunks || 0}
+            <span className="text-slate-300">Total Chunks Generated:</span> 0
           </p>
         </div>
       </div>

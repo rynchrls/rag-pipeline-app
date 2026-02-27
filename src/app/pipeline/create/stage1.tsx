@@ -1,32 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { X, FileText, AlertTriangle } from "lucide-react";
 import StageLayout from "@/app/components/StageLayout";
-import StageLoader from "@/app/components/StageLoader";
+import PipelineSvc from "@/api/services/pipeline.service";
+import { useAuth } from "@/app/store/auth";
+import { GetPipelineStage, PipelineStage } from "@/app/types/pipeline.types";
+import { useToast } from "@/context/ToastContext";
+import { useRouter } from "next/navigation";
 
-export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [agent_name, setAgentName] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
+export default function Stage1({
+  onNext,
+  pipelineData,
+  files,
+  setFiles,
+}: {
+  onNext: (data: PipelineStage) => void;
+  pipelineData: PipelineStage | null | GetPipelineStage;
+  files: File[];
+  setFiles: Dispatch<SetStateAction<File[]>>;
+}) {
+  const [title, setTitle] = useState(pipelineData?.title || "");
+  const [description, setDescription] = useState(
+    pipelineData?.description || "",
+  );
+  const [agent_name, setAgentName] = useState(pipelineData?.agent_name || "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { addToast } = useToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (pipelineData) {
+      setTitle(pipelineData.title || "");
+      setDescription(pipelineData.description || "");
+      setAgentName(pipelineData.agent_name || "");
+    }
+  }, [pipelineData]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
 
+    // Check for invalid file extension
     const invalid = selectedFiles.find(
       (file) => !file.name.toLowerCase().endsWith(".md"),
     );
-
     if (invalid) {
       setError("Only .md files are allowed.");
       return;
     }
 
-    const totalFiles = [...files, ...selectedFiles];
+    // Check for duplicates
+    const duplicates = selectedFiles.find((file) =>
+      files.some((f) => f.name === file.name),
+    );
+    if (duplicates) {
+      setError(`File "${duplicates.name}" is already added.`);
+      return;
+    }
 
+    // Combine existing and new files
+    const totalFiles = [...selectedFiles, ...files];
+
+    // Maximum 10 files
     if (totalFiles.length > 10) {
       setError("Maximum 10 .md files allowed.");
       return;
@@ -37,41 +74,63 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
   };
 
   const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setFiles((prev: File[]) => prev.filter((_, i) => i !== index));
   };
 
   const clearFiles = () => {
-    setFiles([]);
+    setFiles((prev: File[]) => prev.filter((file) => !(file instanceof File)));
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // Prepare FormData
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("agent_name", agent_name);
-    formData.append("description", description);
+      const fileNames = files.map((file) => file.name);
 
-    files.forEach((file, index) => {
-      formData.append("files", file, file.name); // key can be same "files" for multiple files
-    });
+      const newFiles = files.filter((file) => file instanceof File);
 
-    setTimeout(() => {
-      setLoading(false);
-      onNext({
-        pipelineId: "testing",
-        title,
-        description,
-        agent_name,
-        fileCount: files.length,
+      // if (newFiles.length === 0 && pipelineData?.id) {
+      //   setTimeout(() => {
+      //     setLoading(false);
+      //     router.push(`/pipeline/create?stage=2&id=${pipelineData?.id}`);
+      //     onNext(pipelineData);
+      //   }, 500);
+      //   return;
+      // }
+
+      // Prepare FormData
+      const formData = new FormData();
+      if (pipelineData?.id) {
+        formData.append("id", pipelineData.id as unknown as Blob);
+      }
+      formData.append("title", title);
+      formData.append("agent_name", agent_name);
+      formData.append("description", description);
+      formData.append("author_id", user?.id as unknown as Blob);
+      formData.append("email", user?.email as unknown as Blob);
+      formData.append("file_count", files.length as unknown as Blob);
+      formData.append("stage", 2 as unknown as Blob);
+      formData.append("file_names", fileNames as unknown as Blob);
+      newFiles.forEach((file) => {
+        formData.append("files", file, file.name); // key can be same "files" for multiple files
       });
-    }, 1200);
-  };
 
-  if (loading) {
-    return <StageLoader text="Saving pipeline details..." />;
-  }
+      const response = await PipelineSvc.add(formData);
+      const data = response.data.data as PipelineStage;
+      setTimeout(() => {
+        setLoading(false);
+        addToast(response.data.message, "success");
+        router.push(`/pipeline/create?stage=2&id=${data.id}`);
+        onNext(data);
+      }, 500);
+    } catch (error) {
+      addToast((error as Error).message, "error");
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+    }
+  };
 
   return (
     <StageLayout
@@ -118,6 +177,7 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
               placeholder="RAG Agent Name"
               value={agent_name}
               onChange={(e) => setAgentName(e.target.value)}
+              disabled={pipelineData?.id ? true : false}
               className="w-full px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 focus:ring-2 focus:ring-indigo-600"
             />
 
@@ -164,7 +224,7 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
               accept=".md"
               multiple
               onChange={handleFileChange}
-              className="w-full text-sm text-slate-400"
+              className=" cursor-pointer w-full text-sm text-slate-400"
             />
 
             <div className="flex justify-between items-center mt-3 text-xs text-slate-500">
@@ -172,7 +232,7 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
               {files.length > 0 && (
                 <button
                   onClick={clearFiles}
-                  className="text-red-400 hover:text-red-300"
+                  className=" cursor-pointer text-red-400 hover:text-red-300"
                 >
                   Clear all
                 </button>
@@ -189,24 +249,36 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
         {/* File Preview */}
         {files.length > 0 && (
           <div className="bg-slate-800 rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto border border-slate-700">
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-md"
-              >
-                <div className="flex items-center gap-2 text-sm text-slate-300">
-                  <FileText size={16} className="text-indigo-400" />
-                  {file.name}
-                </div>
+            {files.map((file, index) => {
+              const isNewFile = file instanceof File;
 
-                <button
-                  onClick={() => removeFile(index)}
-                  className="text-red-400 hover:text-red-300"
+              return (
+                <div
+                  key={index}
+                  className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-md"
                 >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-2 text-sm text-slate-300">
+                    <FileText size={16} className="text-indigo-400" />
+                    <span>{file.name}</span>
+
+                    {!isNewFile && (
+                      <span className="text-xs text-yellow-400 ml-2">
+                        (Saved file – editable after pipeline creation)
+                      </span>
+                    )}
+                  </div>
+
+                  {isNewFile && (
+                    <button
+                      onClick={() => removeFile(index)}
+                      className=" cursor-pointer text-red-400 hover:text-red-300"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -226,12 +298,28 @@ export default function Stage1({ onNext }: { onNext: (data: any) => void }) {
       </div>
 
       {/* Submit */}
-      <div className="flex justify-end mt-6">
+      <div className="flex justify-between mt-6">
+        <button
+          onClick={() => router.push("/pipeline")}
+          className=" cursor-pointer px-6 py-2 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
+        >
+          ← Back to Setup
+        </button>
         <button
           onClick={handleSubmit}
-          className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition"
+          disabled={loading}
+          className={` cursor-pointer px-6 py-2 rounded-lg transition flex items-center gap-2
+      ${
+        loading
+          ? "bg-indigo-400 cursor-not-allowed"
+          : "bg-indigo-600 hover:bg-indigo-500"
+      }`}
         >
-          Initialize Pipeline →
+          {loading && (
+            <span className=" cursor-pointer w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          )}
+
+          {loading ? "Initializing..." : "Initialize Pipeline →"}
         </button>
       </div>
     </StageLayout>
