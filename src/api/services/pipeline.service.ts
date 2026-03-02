@@ -19,7 +19,7 @@ export default class PipelineSvc {
 
     static async update(data: Record<string, unknown> | FormData) {
         try {
-            return await this.client.put(API_ENDPOINTS.update(), data);
+            return await this.client.patch(API_ENDPOINTS.update(), data);
         } catch (error) {
             const axiosError = error as AxiosError;
             type ErrorResponse = { message?: string };

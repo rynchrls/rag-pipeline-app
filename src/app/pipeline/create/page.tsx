@@ -73,8 +73,8 @@ export default function CreatePipelineWizard() {
       {stage === 2 && (
         <Stage2
           pipelineData={pipelineData}
-          onNext={() => {
-            // setPipelineData(chunkData);
+          onNext={(chunkData: PipelineStage | null | GetPipelineStage) => {
+            setPipelineData(chunkData);
             setStage(3);
           }}
           onBack={onBack}

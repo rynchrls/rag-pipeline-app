@@ -1,46 +1,114 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import StageLayout from "@/app/components/StageLayout";
-import StageLoader from "@/app/components/StageLoader";
 import { GetPipelineStage, PipelineStage } from "@/app/types/pipeline.types";
+import { useToast } from "@/context/ToastContext";
+import { useRouter } from "next/navigation";
+import PipelineSvc from "@/api/services/pipeline.service";
 
 interface Stage2Props {
   pipelineData: PipelineStage | null | GetPipelineStage;
-  onNext: () => void;
+  onNext: (chunkData: PipelineStage | null | GetPipelineStage) => void;
   onBack: () => void;
 }
 
 export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
+  const router = useRouter();
 
-  const handleChunking = async () => {
-    setLoading(true);
+  const [chunkSize, setChunkSize] = useState(500);
+  const [chunkOverlap, setChunkOverlap] = useState(50);
+  const [strategy, setStrategy] = useState("ai_semantic");
 
-    // 🔥 Replace this with your real API call
-    setTimeout(() => {
-      setLoading(false);
-      onNext();
-    }, 2000);
+  const [includeMetadata, setIncludeMetadata] = useState(true);
+
+  const estimatedTotalTokens = (pipelineData?.file_count || 1) * 3000;
+
+  const estimatedChunks = useMemo(() => {
+    if (chunkSize <= chunkOverlap) return 0;
+    return Math.ceil(estimatedTotalTokens / (chunkSize - chunkOverlap));
+  }, [chunkSize, chunkOverlap, estimatedTotalTokens]);
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+
+      if (!pipelineData) {
+        addToast(
+          "Pipeline data is missing. Please restart the process.",
+          "error",
+        );
+        return;
+      }
+
+      pipelineData.stage = 3;
+
+      const formData = new FormData();
+
+      // Append primitive pipeline fields
+      Object.entries(pipelineData).forEach(([key, value]) => {
+        if (key !== "files" && value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+
+      // Append rp_metadata as JSON string
+      formData.append(
+        "rp_metadata",
+        JSON.stringify({
+          chunking: {
+            size: chunkSize,
+            overlap: chunkOverlap,
+            strategy: strategy,
+            created_at: new Date().toISOString(), // important: serialize date
+            include_metadata: includeMetadata,
+          },
+        }),
+      );
+
+      const response = await PipelineSvc.update(formData);
+
+      const data = response.data.data as PipelineStage;
+
+      setTimeout(() => {
+        setLoading(false);
+        addToast(response.data.message, "success");
+        router.push(`/pipeline/create?stage=3&id=${data.id}`);
+        onNext(data);
+      }, 500);
+    } catch (error) {
+      addToast((error as Error).message, "error");
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+    }
   };
 
-  if (loading) {
-    return <StageLoader text="Processing document chunking..." />;
-  }
+  const isInvalidChunkConfig =
+    !chunkSize ||
+    !chunkOverlap ||
+    chunkSize <= chunkOverlap ||
+    chunkSize < 1 ||
+    chunkOverlap < 0;
+
+  const isDisabled = loading || isInvalidChunkConfig;
 
   return (
     <StageLayout
       title="Stage 2: Semantic Chunking"
-      description="Your uploaded documents will now be transformed into structured knowledge chunks optimized for vector embedding."
+      description="Configure how your uploaded documents will be segmented into structured knowledge units optimized for vector retrieval."
     >
-      {/* Progress Indicator */}
+      {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
         <div className="flex-1 h-2 bg-indigo-600 rounded-full" />
         <div className="flex-1 h-2 bg-indigo-600 rounded-full" />
         <div className="flex-1 h-2 bg-slate-700 rounded-full" />
       </div>
 
-      {/* Stage 1 Summary */}
+      {/* Pipeline Summary */}
       <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 mb-6">
         <h3 className="text-indigo-400 font-semibold mb-3">Pipeline Summary</h3>
 
@@ -63,7 +131,7 @@ export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
         </div>
       </div>
 
-      {/* Uploaded Files List */}
+      {/* Uploaded Files */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
         <h3 className="text-lg font-semibold text-slate-300 mb-4">
           Uploaded Files ({pipelineData?.file_count})
@@ -86,7 +154,7 @@ export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
         )}
       </div>
 
-      {/* What is Chunking */}
+      {/* What Happens During Chunking */}
       <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 mb-6">
         <h3 className="text-indigo-400 font-semibold mb-2">
           What Happens During Chunking?
@@ -94,49 +162,98 @@ export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
 
         <ul className="text-sm text-slate-400 space-y-2 list-disc list-inside">
           <li>Documents are parsed and cleaned.</li>
-          <li>Content is split into semantically meaningful segments.</li>
-          <li>Overlapping context windows are applied for better retrieval.</li>
-          <li>Each chunk is prepared for embedding in the next stage.</li>
+          <li>Text is segmented based on semantic boundaries.</li>
+          <li>Overlapping windows preserve contextual continuity.</li>
+          <li>Metadata is attached to each chunk.</li>
+          <li>Chunks are stored for embedding in Stage 3.</li>
         </ul>
       </div>
 
       {/* Chunk Configuration */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
-        <h3 className="text-lg font-semibold text-slate-300 mb-4">
+        <h3 className="text-lg font-semibold text-slate-300 mb-6">
           Chunking Configuration
         </h3>
 
-        <div className="grid grid-cols-2 gap-6 text-sm text-slate-400">
+        <div className="grid grid-cols-2 gap-6 text-sm">
           <div>
-            <p className="text-slate-300 font-medium">Chunk Size</p>
-            <p>500 tokens</p>
+            <label className="text-slate-300 font-medium block mb-2">
+              Chunk Size (tokens)
+            </label>
+            <select
+              value={chunkSize}
+              onChange={(e) => setChunkSize(Number(e.target.value))}
+              className=" cursor-pointer w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"
+            >
+              <option value={256}>256</option>
+              <option value={500}>500 (Recommended)</option>
+              <option value={750}>750</option>
+              <option value={1000}>1000</option>
+            </select>
           </div>
 
           <div>
-            <p className="text-slate-300 font-medium">Chunk Overlap</p>
-            <p>50 tokens</p>
+            <label className="text-slate-300 font-medium block mb-2">
+              Chunk Overlap (tokens)
+            </label>
+            <select
+              value={chunkOverlap}
+              onChange={(e) => setChunkOverlap(Number(e.target.value))}
+              className=" cursor-pointer w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"
+            >
+              <option value={0}>0</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={200}>200</option>
+            </select>
           </div>
 
           <div>
-            <p className="text-slate-300 font-medium">Strategy</p>
-            <p>Recursive semantic splitting</p>
+            <label className="text-slate-300 font-medium block mb-2">
+              Chunking Strategy
+            </label>
+
+            <select
+              value={strategy}
+              onChange={(e) => setStrategy(e.target.value)}
+              className=" cursor-pointer w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"
+            >
+              <option value="ai_semantic">
+                AI Semantic Strategy (Recommended)
+              </option>
+              <option value="sentence">Sentence-Based (High Precision)</option>
+              <option value="paragraph">
+                Paragraph-Based (Natural Structure)
+              </option>
+            </select>
+
+            <p className="text-xs text-slate-500 mt-2">
+              AI Semantic Strategy dynamically detects topic boundaries using
+              contextual similarity analysis for optimal retrieval performance.
+            </p>
           </div>
 
           <div>
-            <p className="text-slate-300 font-medium">Output</p>
-            <p>Structured segments for embedding</p>
+            <label className="text-slate-300 font-medium block mb-2">
+              Include Metadata
+            </label>
+            <select
+              value={includeMetadata ? "yes" : "no"}
+              onChange={(e) => setIncludeMetadata(e.target.value === "yes")}
+              className=" cursor-pointer w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"
+            >
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Estimated Processing */}
+      {/* Estimated Output */}
       <div className="bg-indigo-900/20 border border-indigo-700/30 rounded-xl p-4 mb-6">
-        <h4 className="text-indigo-400 font-medium mb-2">
-          Estimated Processing
-        </h4>
+        <h4 className="text-indigo-400 font-medium mb-2">Estimated Output</h4>
         <p className="text-sm text-slate-400">
-          {pipelineData?.file_count} file(s) detected. Processing time scales
-          based on document size and complexity.
+          ~{estimatedChunks} chunks will be generated.
         </p>
       </div>
 
@@ -146,14 +263,23 @@ export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
           onClick={onBack}
           className=" cursor-pointer px-6 py-2 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
         >
-          ← Back to Setup
+          ← Back
         </button>
-
         <button
-          onClick={handleChunking}
-          className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition"
+          onClick={handleSubmit}
+          disabled={isDisabled}
+          className={` cursor-pointer px-6 py-2 rounded-lg transition flex items-center gap-2
+      ${
+        loading
+          ? "bg-indigo-400 cursor-not-allowed"
+          : "bg-indigo-600 hover:bg-indigo-500"
+      }`}
         >
-          Start Chunking →
+          {loading && (
+            <span className=" cursor-pointer w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          )}
+
+          {loading ? "Initializing..." : "Start Chunking →"}
         </button>
       </div>
     </StageLayout>

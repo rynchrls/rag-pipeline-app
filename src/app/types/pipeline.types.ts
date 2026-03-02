@@ -15,6 +15,15 @@ export interface PipelineStage extends Pipeline {
     file_names: string[];
     file_count: number;
     stage: number;
+    rp_metadata: {
+        chunking: {
+            size: number;
+            overlap: number;
+            strategy: string;
+            created_at: Date;
+            include_metadata: boolean;
+        }
+    }
 }
 
 export interface GetPipelineStage extends PipelineStage {

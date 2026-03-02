@@ -12,6 +12,7 @@ export default function Stage3({
   pipelineData: PipelineStage | null | GetPipelineStage;
   onBack: () => void;
 }) {
+  console.log(pipelineData);
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
 
