@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import StageLayout from "@/app/components/StageLayout";
 import { GetPipelineStage, PipelineStage } from "@/app/types/pipeline.types";
 import { useToast } from "@/context/ToastContext";
@@ -18,19 +18,21 @@ export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
   const { addToast } = useToast();
   const router = useRouter();
 
-  const [chunkSize, setChunkSize] = useState(500);
-  const [chunkOverlap, setChunkOverlap] = useState(50);
-  const [strategy, setStrategy] = useState("ai_semantic");
+  const [chunkSize, setChunkSize] = useState(
+    pipelineData?.rp_metadata?.chunking.size || 500,
+  );
+  const [chunkOverlap, setChunkOverlap] = useState(
+    pipelineData?.rp_metadata?.chunking.overlap || 50,
+  );
+  const [strategy, setStrategy] = useState(
+    pipelineData?.rp_metadata?.chunking.strategy || "ai_semantic",
+  );
 
-  const [includeMetadata, setIncludeMetadata] = useState(true);
-
-  const estimatedTotalTokens = (pipelineData?.file_count || 1) * 3000;
-
-  const estimatedChunks = useMemo(() => {
-    if (chunkSize <= chunkOverlap) return 0;
-    return Math.ceil(estimatedTotalTokens / (chunkSize - chunkOverlap));
-  }, [chunkSize, chunkOverlap, estimatedTotalTokens]);
-
+  const [includeMetadata, setIncludeMetadata] = useState<unknown>(
+    pipelineData?.rp_metadata?.chunking.include_metadata !== null
+      ? pipelineData?.rp_metadata?.chunking.include_metadata
+      : true,
+  );
   const handleSubmit = async () => {
     try {
       setLoading(true);
@@ -98,8 +100,8 @@ export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
 
   return (
     <StageLayout
-      title="Stage 2: Semantic Chunking"
-      description="Configure how your uploaded documents will be segmented into structured knowledge units optimized for vector retrieval."
+      title="Stage 2: Chunking & Vector Preparation"
+      description="Configure how your uploaded documents will be segmented and prepared for vector database storage to enable intelligent semantic retrieval."
     >
       {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
@@ -157,15 +159,16 @@ export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
       {/* What Happens During Chunking */}
       <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 mb-6">
         <h3 className="text-indigo-400 font-semibold mb-2">
-          What Happens During Chunking?
+          What Happens During This Stage?
         </h3>
-
         <ul className="text-sm text-slate-400 space-y-2 list-disc list-inside">
-          <li>Documents are parsed and cleaned.</li>
-          <li>Text is segmented based on semantic boundaries.</li>
+          <li>Documents are parsed and normalized.</li>
+          <li>Text is segmented using your selected chunking strategy.</li>
           <li>Overlapping windows preserve contextual continuity.</li>
-          <li>Metadata is attached to each chunk.</li>
-          <li>Chunks are stored for embedding in Stage 3.</li>
+          <li>Metadata is optionally attached to each chunk.</li>
+          <li>
+            Chunks are prepared for embedding and vector database storage.
+          </li>
         </ul>
       </div>
 
@@ -247,14 +250,6 @@ export default function Stage2({ pipelineData, onNext, onBack }: Stage2Props) {
             </select>
           </div>
         </div>
-      </div>
-
-      {/* Estimated Output */}
-      <div className="bg-indigo-900/20 border border-indigo-700/30 rounded-xl p-4 mb-6">
-        <h4 className="text-indigo-400 font-medium mb-2">Estimated Output</h4>
-        <p className="text-sm text-slate-400">
-          ~{estimatedChunks} chunks will be generated.
-        </p>
       </div>
 
       {/* Actions */}

@@ -10,6 +10,13 @@ export interface Pipeline {
     updated_at: Date;
 }
 
+export interface Chunk {
+    chunk_id: string;
+    content: string;
+    document_id: string;
+    title: string;
+}
+
 export interface PipelineStage extends Pipeline {
     email: string;
     file_names: string[];
@@ -24,6 +31,7 @@ export interface PipelineStage extends Pipeline {
             include_metadata: boolean;
         }
     }
+    chunks: Chunk[];
 }
 
 export interface GetPipelineStage extends PipelineStage {
