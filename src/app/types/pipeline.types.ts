@@ -32,9 +32,24 @@ export interface PipelineStage extends Pipeline {
         }
     }
     chunks: Chunk[];
+    chunks_count: number;
 }
 
 export interface GetPipelineStage extends PipelineStage {
     files: File[];
 
+}
+
+export interface GetPipelines extends Omit<PipelineStage, "chunks"> {
+    message: string;
+    data: PipelineStage[];
+    pagination: {
+        total: number,
+        page: number,
+        limit: number,
+        total_pages: number,
+        has_next: boolean,
+        has_prev: boolean,
+        count: number
+    }
 }

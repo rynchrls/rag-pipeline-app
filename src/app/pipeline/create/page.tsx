@@ -9,6 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/store/auth";
 import PipelineSvc from "@/api/services/pipeline.service";
 import { useRouter } from "next/navigation";
+import Stage4 from "./stage4";
 
 export default function CreatePipelineWizard() {
   const searchParams = useSearchParams();
@@ -84,6 +85,8 @@ export default function CreatePipelineWizard() {
       {stage === 3 && (
         <Stage3 pipelineData={pipelineData} onBack={() => setStage(2)} />
       )}
+
+      {stage === 4 && <Stage4 pipelineData={pipelineData} />}
     </div>
   );
 }

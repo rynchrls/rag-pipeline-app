@@ -100,19 +100,42 @@ export default function Stage1({
 
       // Prepare FormData
       const formData = new FormData();
+
+      // If updating an existing pipeline, seed all existing fields first
       if (pipelineData?.id) {
-        formData.append("id", pipelineData.id as unknown as Blob);
+        Object.entries(pipelineData).forEach(([key, value]) => {
+          if (key !== "files" && value !== undefined && value !== null) {
+            formData.append(
+              key,
+              typeof value === "object" ? JSON.stringify(value) : String(value),
+            );
+          }
+        });
+
+        if (pipelineData.rp_metadata) {
+          // Append rp_metadata as JSON string
+          formData.append(
+            "rp_metadata",
+            JSON.stringify({
+              chunking: {
+                ...pipelineData.rp_metadata?.chunking,
+              },
+            }),
+          );
+        }
       }
-      formData.append("title", title);
-      formData.append("agent_name", agent_name);
-      formData.append("description", description);
-      formData.append("author_id", user?.id as unknown as Blob);
-      formData.append("email", user?.email as unknown as Blob);
-      formData.append("file_count", files.length as unknown as Blob);
-      formData.append("stage", 2 as unknown as Blob);
-      formData.append("file_names", fileNames as unknown as Blob);
+
+      // Override with current form values and derived fields
+      formData.set("title", title);
+      formData.set("agent_name", agent_name);
+      formData.set("description", description);
+      formData.set("author_id", user?.id as unknown as Blob);
+      formData.set("email", user?.email as unknown as Blob);
+      formData.set("file_count", files.length as unknown as Blob);
+      formData.set("stage", 2 as unknown as Blob);
+      formData.set("file_names", fileNames as unknown as Blob);
       newFiles.forEach((file) => {
-        formData.append("files", file, file.name); // key can be same "files" for multiple files
+        formData.append("files", file, file.name);
       });
 
       const response = await PipelineSvc.add(formData);

@@ -5,6 +5,7 @@ import StageLayout from "@/app/components/StageLayout";
 import { GetPipelineStage, PipelineStage } from "@/app/types/pipeline.types";
 import { useToast } from "@/context/ToastContext";
 import PipelineSvc from "@/api/services/pipeline.service";
+import Stage4 from "./stage4";
 
 export default function Stage3({
   pipelineData,
@@ -79,41 +80,42 @@ export default function Stage3({
   =============================== */
   if (completed) {
     return (
-      <StageLayout
-        title="🎉 Agent Successfully Activated"
-        description="Your Retrieval-Augmented Generation system is now live and ready for intelligent interaction."
-      >
-        <div className="bg-green-900/20 border border-green-700/30 rounded-xl p-6 text-center space-y-5">
-          <h3 className="text-green-400 text-xl font-semibold">
-            ✅ {pipelineData?.agent_name} is Live
-          </h3>
+      // <StageLayout
+      //   title="🎉 Agent Successfully Activated"
+      //   description="Your Retrieval-Augmented Generation system is now live and ready for intelligent interaction."
+      // >
+      //   <div className="bg-green-900/20 border border-green-700/30 rounded-xl p-6 text-center space-y-5">
+      //     <h3 className="text-green-400 text-xl font-semibold">
+      //       ✅ {pipelineData?.agent_name} is Live
+      //     </h3>
 
-          <p className="text-slate-400">
-            {pipelineData?.chunks?.length || 0} chunks are indexed and ready for
-            semantic retrieval across {pipelineData?.file_count} documents.
-          </p>
+      //     <p className="text-slate-400">
+      //       {pipelineData?.chunks?.length || 0} chunks are indexed and ready for
+      //       semantic retrieval across {pipelineData?.file_count} documents.
+      //     </p>
 
-          <div className="text-sm text-slate-400 space-y-2">
-            <p className="font-medium text-slate-300">
-              During every user query, the system will automatically:
-            </p>
-            <ul className="space-y-1">
-              <li>• Convert the question into a semantic embedding</li>
-              <li>• Perform similarity search against your vector index</li>
-              <li>• Retrieve the most relevant knowledge chunks</li>
-              <li>• Augment the LLM prompt with contextual data</li>
-              <li>• Generate grounded, knowledge-based responses</li>
-            </ul>
-          </div>
+      //     <div className="text-sm text-slate-400 space-y-2">
+      //       <p className="font-medium text-slate-300">
+      //         During every user query, the system will automatically:
+      //       </p>
+      //       <ul className="space-y-1">
+      //         <li>• Convert the question into a semantic embedding</li>
+      //         <li>• Perform similarity search against your vector index</li>
+      //         <li>• Retrieve the most relevant knowledge chunks</li>
+      //         <li>• Augment the LLM prompt with contextual data</li>
+      //         <li>• Generate grounded, knowledge-based responses</li>
+      //       </ul>
+      //     </div>
 
-          <button
-            onClick={() => (window.location.href = `/chatbox`)}
-            className=" cursor-pointer px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition"
-          >
-            Start Chatting →
-          </button>
-        </div>
-      </StageLayout>
+      //     <button
+      //       onClick={() => (window.location.href = `/chatbox`)}
+      //       className=" cursor-pointer px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition"
+      //     >
+      //       Start Chatting →
+      //     </button>
+      //   </div>
+      // </StageLayout>
+      <Stage4 pipelineData={pipelineData} />
     );
   }
 

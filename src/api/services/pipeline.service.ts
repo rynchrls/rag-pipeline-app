@@ -40,5 +40,27 @@ export default class PipelineSvc {
             throw new Error(message);
         }
     }
+    static async get_all(params: { author_id: number, page: number, limit: number, search: string }) {
+        try {
+            return await this.client.get(API_ENDPOINTS.get_all(params.author_id, params.page, params.limit, params.search));
+        } catch (error) {
+            const axiosError = error as AxiosError;
+            type ErrorResponse = { message?: string };
+            const data = axiosError.response?.data as ErrorResponse | undefined;
+            const message = data?.message || 'Request failed';
+            throw new Error(message);
+        }
+    }
+    static async del(params: { id: number, author_id: number, email: string, agent_name: string }) {
+        try {
+            return await this.client.delete(`${API_ENDPOINTS.del()}?id=${params.id}&author_id=${params.author_id}&email=${params.email}&agent_name=${params.agent_name}`);
+        } catch (error) {
+            const axiosError = error as AxiosError;
+            type ErrorResponse = { message?: string };
+            const data = axiosError.response?.data as ErrorResponse | undefined;
+            const message = data?.message || 'Request failed';
+            throw new Error(message);
+        }
+    }
 
 }
