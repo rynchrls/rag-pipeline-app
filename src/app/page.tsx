@@ -1,8 +1,26 @@
 "use client";
 import Link from "next/link";
 import { Sparkles, Database, MessageSquare } from "lucide-react";
-
+import { useAuth } from "./store/auth";
+import { io } from "socket.io-client";
 export default function Home() {
+  const { user } = useAuth();
+
+  if (user) {
+    const socket = io(process.env.NEXT_PUBLIC_API_URL, {
+      // path: "/socket.io", // if you mounted at /ws
+      auth: { token: user.id },
+      transports: ["websocket"], // optional: force ws only
+    });
+
+    socket.on("connect", () => {
+      console.log("connected");
+    });
+
+    socket.on("server:hello", (data) => {
+      console.log("progress", data);
+    });
+  }
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-6">
       <div className="max-w-5xl w-full text-center">
