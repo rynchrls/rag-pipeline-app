@@ -98,9 +98,8 @@ export default function ChatboxPage() {
 
       setMsgsLoading(true);
       try {
-        const response = await MessageSvc.get_all({
+        const response = await ConversationSvc.get({
           author_id: Number(user.id),
-          pipeline_id: selectedAgent.id,
           conversation_id: convId,
           page: 1,
           limit: 20,
