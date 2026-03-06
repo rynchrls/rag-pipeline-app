@@ -193,5 +193,5 @@ Check that:
 
 ## Required `.env.local`
 
-    NEXT_PUBLIC_API_URL=https://uncrushable-lieselotte-venular.ngrok-free.dev
+    NEXT_PUBLIC_API_URL="THE API URL"
     NEXT_PUBLIC_APP_NAME=Rag Pipeline
