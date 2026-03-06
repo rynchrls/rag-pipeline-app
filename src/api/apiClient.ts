@@ -9,7 +9,6 @@ export const getApiClient = (): AxiosInstance => {
         clientInstance = axios.create({
             baseURL: process.env.NEXT_PUBLIC_API_URL,
             timeout: 60000000,
-            withCredentials: true,
             headers: {
                 "ngrok-skip-browser-warning": "1",
             },
