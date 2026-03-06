@@ -15,11 +15,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-slate-950 text-white min-h-screen">
-        <Navbar />
+      <body className="min-h-screen bg-slate-950 text-white">
         <ToastProvider>
           <AuthGuard>
-            <main className="p-6 max-w-7xl mx-auto">{children}</main>
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+
+              <main className="w-full flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+                <div className="mx-auto w-full max-w-7xl">{children}</div>
+              </main>
+            </div>
           </AuthGuard>
         </ToastProvider>
       </body>

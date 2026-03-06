@@ -23,7 +23,7 @@ function CopyButton({ code }: { code: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-3 right-3 p-1.5 rounded-md bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white transition-all"
+      className="absolute right-2 top-2 rounded-md bg-slate-700/60 p-1.5 text-slate-300 transition-all hover:bg-slate-600 hover:text-white sm:right-3 sm:top-3"
       title="Copy code"
     >
       {copied ? <Check size={13} /> : <Copy size={13} />}
@@ -35,7 +35,6 @@ function CopyButton({ code }: { code: string }) {
    Markdown component map — styles every element on-brand
 ───────────────────────────────────────────────────────── */
 const markdownComponents: Components = {
-  // ── Code blocks & inline code ──
   code({ className, children, ...props }) {
     const match = /language-(\w+)/.exec(className ?? "");
     const isBlock = !!match;
@@ -43,36 +42,40 @@ const markdownComponents: Components = {
 
     if (isBlock) {
       return (
-        <div className="relative my-3 rounded-xl overflow-hidden border border-slate-700/60">
-          {/* Language badge */}
-          <div className="flex items-center justify-between px-4 py-1.5 bg-slate-800/80 border-b border-slate-700/60">
-            <span className="text-xs font-mono text-slate-400">{match[1]}</span>
+        <div className="relative my-3 overflow-hidden rounded-xl border border-slate-700/60">
+          <div className="flex items-center justify-between border-b border-slate-700/60 bg-slate-800/80 px-3 py-1.5 sm:px-4">
+            <span className="pr-10 text-xs font-mono text-slate-400">
+              {match[1]}
+            </span>
             <CopyButton code={rawCode} />
           </div>
-          <SyntaxHighlighter
-            style={oneDark}
-            language={match[1]}
-            PreTag="div"
-            customStyle={{
-              margin: 0,
-              borderRadius: 0,
-              background: "#0f1117",
-              fontSize: "0.8rem",
-              lineHeight: "1.6",
-              padding: "1rem 1.25rem",
-            }}
-            codeTagProps={{ className: "font-mono" }}
-          >
-            {rawCode}
-          </SyntaxHighlighter>
+
+          <div className="overflow-x-auto">
+            <SyntaxHighlighter
+              style={oneDark}
+              language={match[1]}
+              PreTag="div"
+              customStyle={{
+                margin: 0,
+                borderRadius: 0,
+                background: "#0f1117",
+                fontSize: "0.78rem",
+                lineHeight: "1.6",
+                padding: "0.875rem 1rem",
+                minWidth: "max-content",
+              }}
+              codeTagProps={{ className: "font-mono" }}
+            >
+              {rawCode}
+            </SyntaxHighlighter>
+          </div>
         </div>
       );
     }
 
-    // Inline code
     return (
       <code
-        className="px-1.5 py-0.5 rounded-md bg-slate-700/70 text-indigo-300 font-mono text-[0.82em] border border-slate-600/50"
+        className="wrap-break-word rounded-md border border-slate-600/50 bg-slate-700/70 px-1.5 py-0.5 font-mono text-[0.82em] text-indigo-300"
         {...props}
       >
         {children}
@@ -80,69 +83,68 @@ const markdownComponents: Components = {
     );
   },
 
-  // ── Headings ──
   h1: ({ children }) => (
-    <h1 className="text-xl font-bold text-white mt-5 mb-2 border-b border-slate-700 pb-1">
+    <h1 className="mt-5 mb-2 border-b border-slate-700 pb-1 text-lg font-bold text-white sm:text-xl">
       {children}
     </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-lg font-bold text-white mt-4 mb-2">{children}</h2>
+    <h2 className="mt-4 mb-2 text-base font-bold text-white sm:text-lg">
+      {children}
+    </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-base font-semibold text-slate-100 mt-3 mb-1.5">
+    <h3 className="mt-3 mb-1.5 text-sm font-semibold text-slate-100 sm:text-base">
       {children}
     </h3>
   ),
   h4: ({ children }) => (
-    <h4 className="text-sm font-semibold text-slate-200 mt-3 mb-1">
+    <h4 className="mt-3 mb-1 text-sm font-semibold text-slate-200">
       {children}
     </h4>
   ),
   h5: ({ children }) => (
-    <h5 className="text-sm font-medium text-slate-300 mt-2 mb-1">{children}</h5>
+    <h5 className="mt-2 mb-1 text-sm font-medium text-slate-300">{children}</h5>
   ),
   h6: ({ children }) => (
-    <h6 className="text-xs font-medium text-slate-400 mt-2 mb-1 uppercase tracking-wide">
+    <h6 className="mt-2 mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">
       {children}
     </h6>
   ),
 
-  // ── Paragraphs ──
   p: ({ children }) => (
-    <p className="leading-relaxed text-slate-200 my-2 first:mt-0 last:mb-0">
+    <p className="my-2 wrap-break-word leading-relaxed text-slate-200 first:mt-0 last:mb-0">
       {children}
     </p>
   ),
 
-  // ── Lists ──
   ul: ({ children }) => (
-    <ul className="list-disc list-outside pl-5 my-2 space-y-1 text-slate-200">
+    <ul className="my-2 list-outside list-disc space-y-1 pl-5 text-slate-200">
       {children}
     </ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal list-outside pl-5 my-2 space-y-1 text-slate-200">
+    <ol className="my-2 list-outside list-decimal space-y-1 pl-5 text-slate-200">
       {children}
     </ol>
   ),
-  li: ({ children }) => <li className="leading-relaxed pl-1">{children}</li>,
+  li: ({ children }) => <li className="pl-1 leading-relaxed">{children}</li>,
 
-  // ── Blockquotes ──
   blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-indigo-500 pl-4 my-3 italic text-slate-400 bg-slate-800/40 py-2 rounded-r-lg">
+    <blockquote className="my-3 rounded-r-lg border-l-4 border-indigo-500 bg-slate-800/40 py-2 pl-4 italic text-slate-400">
       {children}
     </blockquote>
   ),
 
-  // ── Tables (GFM) ──
   table: ({ children }) => (
-    <div className="overflow-x-auto my-3 rounded-xl border border-slate-700">
-      <table className="w-full text-sm text-slate-200">{children}</table>
+    <div className="my-3 overflow-x-auto rounded-xl border border-slate-700">
+      <table className="w-full min-w-[520px] text-sm text-slate-200">
+        {children}
+      </table>
     </div>
   ),
   thead: ({ children }) => (
-    <thead className="bg-slate-800 text-slate-300 text-xs uppercase">
+    <thead className="bg-slate-800 text-xs uppercase text-slate-300">
       {children}
     </thead>
   ),
@@ -150,36 +152,35 @@ const markdownComponents: Components = {
     <tbody className="divide-y divide-slate-700/60">{children}</tbody>
   ),
   tr: ({ children }) => (
-    <tr className="even:bg-slate-800/30 hover:bg-slate-700/30 transition-colors">
+    <tr className="transition-colors even:bg-slate-800/30 hover:bg-slate-700/30">
       {children}
     </tr>
   ),
   th: ({ children }) => (
-    <th className="px-4 py-2.5 text-left font-semibold tracking-wide">
+    <th className="px-3 py-2 text-left font-semibold tracking-wide sm:px-4 sm:py-2.5">
       {children}
     </th>
   ),
-  td: ({ children }) => <td className="px-4 py-2.5">{children}</td>,
+  td: ({ children }) => (
+    <td className="px-3 py-2 wrap-break-word sm:px-4 sm:py-2.5">{children}</td>
+  ),
 
-  // ── Links ──
   a: ({ href, children }) => (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors"
+      className="break-all text-indigo-400 underline underline-offset-2 transition-colors hover:text-indigo-300"
     >
       {children}
     </a>
   ),
 
-  // ── Text formatting ──
   strong: ({ children }) => (
     <strong className="font-semibold text-white">{children}</strong>
   ),
   em: ({ children }) => <em className="italic text-slate-300">{children}</em>,
 
-  // ── Horizontal rule ──
   hr: () => <hr className="my-4 border-slate-700" />,
 };
 
@@ -196,21 +197,21 @@ export default function ChatMessage({
   const isUser = role === "user";
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
       {isUser ? (
-        /* ── User bubble: plain text, right-aligned ── */
-        <div className="max-w-xl px-4 py-2.5 rounded-2xl bg-indigo-600 text-white text-sm leading-relaxed">
+        <div className="w-fit max-w-[85%] wrap-break-word rounded-2xl bg-indigo-600 px-3.5 py-2.5 text-sm leading-relaxed text-white sm:max-w-xl sm:px-4">
           {content}
         </div>
       ) : (
-        /* ── System bubble: rich markdown, left-aligned ── */
-        <div className="max-w-3xl w-full px-5 py-3.5 rounded-2xl bg-slate-800/70 border border-slate-700/60 text-sm">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={markdownComponents}
-          >
-            {content}
-          </ReactMarkdown>
+        <div className="w-full max-w-[95%] rounded-2xl border border-slate-700/60 bg-slate-800/70 px-4 py-3 text-sm sm:max-w-3xl sm:px-5 sm:py-3.5">
+          <div className="max-w-full overflow-hidden">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownComponents}
+            >
+              {content}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </div>
