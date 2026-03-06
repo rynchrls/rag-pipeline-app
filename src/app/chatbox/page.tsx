@@ -546,7 +546,7 @@ export default function ChatboxPage() {
               <div
                 key={conv.id}
                 onClick={() => handleSelectConversation(conv.id)}
-                className={`group flex min-w-[180px] items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all md:min-w-0
+                className={` cursor-pointer group flex min-w-[180px] items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all md:min-w-0
                   ${
                     activeConvId === conv.id
                       ? "bg-indigo-600 shadow-md shadow-indigo-900/30"
