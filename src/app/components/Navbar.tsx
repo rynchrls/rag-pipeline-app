@@ -39,16 +39,16 @@ export default function Navbar() {
           Rag Pipeline
         </Link>
 
-        <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 md:w-auto md:justify-end md:overflow-visible md:pb-0">
-          <Link href="/chatbox" className={linkStyle("/chatbox")}>
-            Chatbox
-          </Link>
+        {isLoggedIn && (
+          <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 md:w-auto md:justify-end md:overflow-visible md:pb-0">
+            <Link href="/chatbox" className={linkStyle("/chatbox")}>
+              Chatbox
+            </Link>
 
-          <Link href="/pipeline" className={linkStyle("/pipeline")}>
-            Pipeline
-          </Link>
+            <Link href="/pipeline" className={linkStyle("/pipeline")}>
+              Pipeline
+            </Link>
 
-          {isLoggedIn && (
             <button
               onClick={handleLogout}
               className="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-medium text-white transition hover:bg-red-500 whitespace-nowrap"
@@ -56,8 +56,8 @@ export default function Navbar() {
               <LogOut size={16} />
               Logout
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </nav>
   );
