@@ -47,7 +47,7 @@ Create a file named:
 
 in the root of the project, then add the following variables:
 
-    NEXT_PUBLIC_API_URL=https://uncrushable-lieselotte-venular.ngrok-free.dev
+    NEXT_PUBLIC_API_URL="YOUR API URL"
     NEXT_PUBLIC_APP_NAME=Rag Pipeline
 
 ### Variable reference
