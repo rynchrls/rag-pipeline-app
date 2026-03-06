@@ -10,6 +10,9 @@ export const getApiClient = (): AxiosInstance => {
             baseURL: process.env.NEXT_PUBLIC_API_URL,
             timeout: 60000000,
             withCredentials: true,
+            headers: {
+                "ngrok-skip-browser-warning": "1",
+            },
         });
 
         clientInstance.interceptors.response.use(
