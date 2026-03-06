@@ -31,7 +31,6 @@ export default function PipelinePage() {
       setDebouncedSearch(search);
       setPage(1);
       // Removed setPipelines([]) to prevent flickering/empty states during search
-      setHasNext(true);
     }, 500);
 
     return () => clearTimeout(timer);
@@ -40,7 +39,7 @@ export default function PipelinePage() {
   // ------------------ Fetch Pipelines ------------------
   const fetchPipelines = useCallback(
     async (pageToFetch: number) => {
-      if (loading || !user) return;
+      if (loading || !user.id) return;
 
       setLoading(true);
       try {

@@ -41,5 +41,16 @@ export default class ConversationSvc {
         }
     }
 
+    static async delete(params: { conversation_id: number, author_id: number }) {
+        try {
+            return await this.client.delete(API_ENDPOINTS.c_del(params.conversation_id, params.author_id));
+        } catch (error) {
+            const axiosError = error as AxiosError;
+            type ErrorResponse = { message?: string };
+            const data = axiosError.response?.data as ErrorResponse | undefined;
+            const message = data?.message || 'Request failed';
+            throw new Error(message);
+        }
+    }
 
 }

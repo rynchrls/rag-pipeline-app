@@ -1,36 +1,197 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rag Pipeline Frontend
 
-## Getting Started
+This is the frontend application for **Rag Pipeline**, built with
+**Next.js**. It provides the user interface for managing pipelines,
+chatting with agents, and interacting with your RAG system.
 
-First, run the development server:
+------------------------------------------------------------------------
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Rag Pipeline is a frontend for a Retrieval-Augmented Generation
+workflow. Through this app, users can:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+-   Manage RAG pipelines
+-   Create and use agents
+-   Upload and process documents
+-   Start conversations with agents
+-   View chat history and pipeline-related data
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project is built with:
 
-## Learn More
+-   Next.js
+-   React
+-   TypeScript
+-   Tailwind CSS
 
-To learn more about Next.js, take a look at the following resources:
+------------------------------------------------------------------------
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Requirements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Before running the project locally, make sure you have:
 
-## Deploy on Vercel
+-   **Node.js** installed
+-   a package manager such as:
+    -   npm
+    -   yarn
+    -   pnpm
+    -   bun
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+------------------------------------------------------------------------
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment Setup
+
+Create a file named:
+
+.env.local
+
+in the root of the project, then add the following variables:
+
+    NEXT_PUBLIC_API_URL=https://uncrushable-lieselotte-venular.ngrok-free.dev
+    NEXT_PUBLIC_APP_NAME=Rag Pipeline
+
+### Variable reference
+
+-   **NEXT_PUBLIC_API_URL** → backend API base URL used by the frontend
+-   **NEXT_PUBLIC_APP_NAME** → application name displayed in the
+    frontend
+
+------------------------------------------------------------------------
+
+## Installation
+
+Install dependencies:
+
+    npm install
+
+or
+
+    yarn install
+
+or
+
+    pnpm install
+
+or
+
+    bun install
+
+------------------------------------------------------------------------
+
+## Running the Project Locally
+
+Start the development server:
+
+    npm run dev
+
+or
+
+    yarn dev
+
+or
+
+    pnpm dev
+
+or
+
+    bun dev
+
+Once the server is running, open:
+
+http://localhost:3000
+
+in your browser.
+
+------------------------------------------------------------------------
+
+## Project Structure
+
+Example structure:
+
+    app/
+    components/
+    api/
+    store/
+    types/
+    public/
+
+### Folder Description
+
+-   **app/** → Next.js routes and pages
+-   **components/** → reusable UI components
+-   **api/** → service files for backend requests
+-   **store/** → client-side state management
+-   **types/** → TypeScript interfaces and types
+-   **public/** → static assets
+
+------------------------------------------------------------------------
+
+## Editing the Application
+
+You can start editing the app by modifying:
+
+    app/page.tsx
+
+Changes will automatically reload while the dev server is running.
+
+------------------------------------------------------------------------
+
+## Production Build
+
+Create a production build:
+
+    npm run build
+
+Run the production server:
+
+    npm run start
+
+------------------------------------------------------------------------
+
+## Scripts
+
+Common scripts used in this project:
+
+    npm run dev
+    npm run build
+    npm run start
+    npm run lint
+
+------------------------------------------------------------------------
+
+## Troubleshooting
+
+### Environment variables not loading
+
+Make sure:
+
+-   the file is named `.env.local`
+-   variables start with `NEXT_PUBLIC_` if used on the frontend
+-   you restart the dev server after editing `.env.local`
+
+### API requests failing
+
+Check that:
+
+-   `NEXT_PUBLIC_API_URL` is correct
+-   the backend server is running
+-   your **ngrok tunnel** is active
+-   backend **CORS configuration** allows requests
+
+------------------------------------------------------------------------
+
+## Quick Local Setup
+
+1.  Clone the repository
+2.  Create `.env.local`
+3.  Add the required environment variables
+4.  Install dependencies
+5.  Run the development server
+6.  Open `http://localhost:3000`
+
+------------------------------------------------------------------------
+
+## Required `.env.local`
+
+    NEXT_PUBLIC_API_URL=https://uncrushable-lieselotte-venular.ngrok-free.dev
+    NEXT_PUBLIC_APP_NAME=Rag Pipeline
